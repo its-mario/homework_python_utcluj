@@ -1,4 +1,6 @@
 # Example file showing a circle moving on screen
+import pygame
+
 from entities import *
 
 # pygame setup
@@ -44,6 +46,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            player.jump()
 
     # fill the screen with a color to wipe away anything from last frame
     # screen.fill("purple")
@@ -51,20 +55,11 @@ while running:
     screen.fill([255, 255, 255])
     screen.blit(background.surf, background.rect)
 
-
     player.move(dt)
     for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
     all_sprites.update()
 
-    # screen.blit(player.image, player.rect)
-
-    # draw the floor
-    # screen.blit(floor.surf, floor.rect)
-
-    keys = pygame.key.get_pressed()
-
-    # flip() the display to put your work on screen
     pygame.display.flip()
 
     # limits FPS to 60
