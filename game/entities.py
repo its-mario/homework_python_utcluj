@@ -1,6 +1,4 @@
 import pygame
-from pygame.locals import *
-import sys
 
 ACC = 0.5
 FRIC = -0.12
@@ -25,12 +23,9 @@ class Background(pygame.sprite.Sprite):
 class Floor(pygame.sprite.Sprite):
     def __init__(self, height: float, width: float):
         super().__init__()
-        self.surf = pygame.Surface((width, height/4))
+        self.surf = pygame.Surface((width, height / 4))
         self.surf.fill((182, 255, 0))
-        self.rect = self.surf.get_rect(midbottom=( width/2 , height))
-
-    def move(self, dt: float):
-        pass
+        self.rect = self.surf.get_rect(midbottom=(width / 2, height))
 
 
 class Player(pygame.sprite.Sprite):
@@ -49,7 +44,6 @@ class Player(pygame.sprite.Sprite):
         self.jumping = True
 
     def update(self):
-        pass
         # getting groups in wich the player exists it should be only one
         groups = self.groups()
 
@@ -68,10 +62,33 @@ class Player(pygame.sprite.Sprite):
         self.acc.y = 9.18
         self.vel += self.acc
         self.pos += self.vel * dt
-
         self.rect.midbottom = self.pos
+
 
     def jump(self):
         if not self.jumping:
             self.vel += (0, -500)
             self.jumping = True
+
+
+class Obstacle(pygame.sprite.Sprite):
+
+    def __init__(self, width: int, height: int, moving_speed=-500):
+        super().__init__()
+        self.surf = pygame.Surface((50, 100))
+        self.surf.fill((182, 255, 0))
+        self.pos = vec(width, height * 3 / 4)
+        self.rect = self.surf.get_rect()
+        self.rect.left, self.rect.top = self.pos
+
+        self.moving_speed = moving_speed
+        self.screen_with = width,
+        self.screen_height = height,
+
+    def move(self, dt: float):
+        self.pos += vec(self.moving_speed * dt, 0.0)
+        self.rect.midbottom = self.pos
+
+        if self.pos.x <= 0:
+            print(self.screen_with)
+            self.pos.x = self.screen_with[0]

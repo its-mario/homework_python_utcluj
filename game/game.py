@@ -36,9 +36,20 @@ floor = Floor(
     width=screen.get_width()
 )
 
+obstacle_1 = Obstacle(
+    height=screen.get_height(),
+    width=screen.get_width(),
+)
+
+
+
 all_sprites = pygame.sprite.Group()
 all_sprites.add(floor)
 all_sprites.add(player)
+
+obstacles = pygame.sprite.Group()
+obstacles.add(player)
+obstacles.add(obstacle_1)
 
 while running:
     # poll for events
@@ -58,6 +69,11 @@ while running:
     player.move(dt)
     for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
+
+    obstacle_1.move(dt)
+    for entity in obstacles:
+        screen.blit(entity.surf, entity.rect)
+
     all_sprites.update()
 
     pygame.display.flip()
