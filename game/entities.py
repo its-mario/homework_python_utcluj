@@ -1,10 +1,7 @@
 import pygame
 
-ACC = 0.5
-FRIC = -0.12
-FPS = 60
-
 vec = pygame.math.Vector2
+LOSE_EVENT = pygame.USEREVENT + 1
 
 
 class Background(pygame.sprite.Sprite):
@@ -16,9 +13,6 @@ class Background(pygame.sprite.Sprite):
         self.rect = react
         self.rect.left, self.rect.top = location
 
-    def move(self, dt: float):
-        pass
-
 
 class Floor(pygame.sprite.Sprite):
     def __init__(self, height: float, width: float):
@@ -29,25 +23,33 @@ class Floor(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image_file, position, width: int, heigth: int):
+    def __init__(
+            self,
+            image_file,
+            position,
+            width: int,
+            height: int,
+    ):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         picture = pygame.image.load(image_file)
-        self.surf = pygame.transform.scale(picture, (width, heigth))
+        self.surf = pygame.transform.scale(picture, (width, height))
         self.rect = self.surf.get_rect()
         self.rect.left, self.rect.top = position
 
         self.width = width
-        self.height = heigth
+        self.height = height
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
         self.pos = vec(200, 100)
         self.jumping = True
 
     def update(self):
-        # getting groups in wich the player exists it should be only one
+        # getting groups in which the player exists it should be only one
         groups = self.groups()
 
-        # getting the group
+        # !!! Attention this function is poorly writen and should be implemented in other way,
+        #  but for now this is only reasonable implementation.
+
         group = groups[0]
         hits = pygame.sprite.spritecollide(self, group, False)
         if self.vel.y > 0:
@@ -56,6 +58,14 @@ class Player(pygame.sprite.Sprite):
                 self.pos.y = hits[0].rect.top + 1
                 self.jumping = False
 
+        if len(groups) == 2:
+            group = groups[1]
+            hits = pygame.sprite.spritecollide(self, group, False)
+
+            if len(hits) > 1:
+                event = pygame.event.Event(LOSE_EVENT, {})
+                pygame.event.post(event)
+
     def move(self, dt: float):
         self.acc = vec(0, 0)
 
@@ -63,7 +73,6 @@ class Player(pygame.sprite.Sprite):
         self.vel += self.acc
         self.pos += self.vel * dt
         self.rect.midbottom = self.pos
-
 
     def jump(self):
         if not self.jumping:

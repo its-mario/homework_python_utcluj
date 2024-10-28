@@ -1,6 +1,5 @@
 # Example file showing a circle moving on screen
 import pygame
-
 from entities import *
 
 # pygame setup
@@ -20,7 +19,7 @@ player_pos = pygame.Vector2(
 player = Player(
     'assets/player/DinoSprites_vita_idl.png',
     player_pos,
-    heigth=50,
+    height=50,
     width=50
 )
 #
@@ -59,8 +58,10 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             player.jump()
+        if event.type == LOSE_EVENT:
+            running = False
 
-    # fill the screen with a color to wipe away anything from last frame
+# fill the screen with a color to wipe away anything from last frame
     # screen.fill("purple")
 
     screen.fill([255, 255, 255])
@@ -75,6 +76,7 @@ while running:
         screen.blit(entity.surf, entity.rect)
 
     all_sprites.update()
+    obstacles.update()
 
     pygame.display.flip()
 
