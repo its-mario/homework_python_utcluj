@@ -1,5 +1,6 @@
 # Example file showing a circle moving on screen
 import pygame
+
 from entities import *
 
 # pygame setup
@@ -40,8 +41,6 @@ obstacle_1 = Obstacle(
     width=screen.get_width(),
 )
 
-
-
 all_sprites = pygame.sprite.Group()
 all_sprites.add(floor)
 all_sprites.add(player)
@@ -61,7 +60,7 @@ while running:
         if event.type == LOSE_EVENT:
             running = False
 
-# fill the screen with a color to wipe away anything from last frame
+    # fill the screen with a color to wipe away anything from last frame
     # screen.fill("purple")
 
     screen.fill([255, 255, 255])
