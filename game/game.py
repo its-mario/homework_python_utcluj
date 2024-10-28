@@ -53,7 +53,7 @@ all_entities.add(floor)
 all_entities.add(player)
 all_entities.add(obstacle_1)
 
-score_font = pygame.font.SysFont("Monospace", 32)
+score_font = pygame.font.Font("assets/fonts/Tiny5-Regular.ttf", 64)
 
 while running:
     # poll for events
@@ -74,7 +74,7 @@ while running:
     score = ((pygame.time.get_ticks() - start_time) // 1000) * 100
     score_rendered = score_font.render(f"Score = {score}", 1, (255, 255, 255))
 
-    screen.blit(score_rendered, (width/2, 250))
+    screen.blit(score_rendered, (width/2 - 100, 100))
     player.move(dt)
     obstacle_1.move(dt)
 
