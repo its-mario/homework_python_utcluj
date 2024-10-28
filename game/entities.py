@@ -46,23 +46,16 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         # getting groups in which the player exists it should be only one
         groups = self.groups()
-
-        # !!! Attention this function is poorly writen and should be implemented in other way,
-        #  but for now this is only reasonable implementation.
-
         group = groups[0]
         hits = pygame.sprite.spritecollide(self, group, False)
-        if self.vel.y > 0:
-            if len(hits) > 1:
+        print(hits)
+        for hit in hits:
+            if isinstance(hit, Floor) and self.vel.y >= 0:
                 self.vel.y = 0
                 self.pos.y = hits[0].rect.top + 1
                 self.jumping = False
 
-        if len(groups) == 2:
-            group = groups[1]
-            hits = pygame.sprite.spritecollide(self, group, False)
-
-            if len(hits) > 1:
+            if isinstance(hit, Obstacle):
                 event = pygame.event.Event(LOSE_EVENT, {})
                 pygame.event.post(event)
 

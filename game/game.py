@@ -1,4 +1,6 @@
 # Example file showing a circle moving on screen
+import math
+
 import pygame
 
 from entities import *
@@ -9,12 +11,16 @@ screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
 dt = 0
+start_time = pygame.time.get_ticks()
+score = 0
 pygame.display.set_caption("Dino")
+height = screen.get_height()
+width = screen.get_width()
 
 # loading the things
 player_pos = pygame.Vector2(
-    screen.get_width() / 2,
-    screen.get_height() / 2
+    width / 2,
+    height / 2
 )
 
 player = Player(
@@ -32,22 +38,22 @@ background = Background(
 )
 
 floor = Floor(
-    height=screen.get_height(),
-    width=screen.get_width()
+    height=height,
+    width=width
 )
 
 obstacle_1 = Obstacle(
-    height=screen.get_height(),
-    width=screen.get_width(),
+    height=height,
+    width=width,
 )
 
-all_sprites = pygame.sprite.Group()
-all_sprites.add(floor)
-all_sprites.add(player)
 
-obstacles = pygame.sprite.Group()
-obstacles.add(player)
-obstacles.add(obstacle_1)
+all_entities = pygame.sprite.Group()
+all_entities.add(floor)
+all_entities.add(player)
+all_entities.add(obstacle_1)
+
+score_font = pygame.font.SysFont("Monospace", 32)
 
 while running:
     # poll for events
@@ -65,17 +71,17 @@ while running:
 
     screen.fill([255, 255, 255])
     screen.blit(background.surf, background.rect)
+    score = ((pygame.time.get_ticks() - start_time) // 1000) * 100
+    score_rendered = score_font.render(f"Score = {score}", 1, (255, 255, 255))
 
+    screen.blit(score_rendered, (width/2, 250))
     player.move(dt)
-    for entity in all_sprites:
-        screen.blit(entity.surf, entity.rect)
-
     obstacle_1.move(dt)
-    for entity in obstacles:
+
+    for entity in all_entities:
         screen.blit(entity.surf, entity.rect)
 
-    all_sprites.update()
-    obstacles.update()
+    all_entities.update()
 
     pygame.display.flip()
 
