@@ -37,7 +37,16 @@ background = Background(
     screen.get_rect()
 )
 
-floor = Floor(
+floor1 = Floor(
+    id=0,
+    image_file="assets/floor/terrain.png",
+    height=height,
+    width=width,
+)
+
+floor2 = Floor(
+    id=1,
+    image_file="assets/floor/terrain.png",
     height=height,
     width=width
 )
@@ -47,15 +56,16 @@ obstacle_1 = Obstacle(
     width=width,
 )
 
-
 all_entities = pygame.sprite.Group()
-all_entities.add(floor)
+all_entities.add(floor1)
+all_entities.add(floor2)
 all_entities.add(player)
 all_entities.add(obstacle_1)
 
 score_font = pygame.font.Font("assets/fonts/Tiny5-Regular.ttf", 64)
 
 while running:
+
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
@@ -74,9 +84,13 @@ while running:
     score = ((pygame.time.get_ticks() - start_time) // 1000) * 100
     score_rendered = score_font.render(f"Score = {score}", 1, (255, 255, 255))
 
-    screen.blit(score_rendered, (width/2 - 100, 100))
+    screen.blit(score_rendered, (width / 2 - 100, 100))
     player.move(dt)
-    obstacle_1.move(dt)
+
+    SPEED = -500
+    obstacle_1.move(dt, SPEED)
+    floor1.move(dt, SPEED)
+    floor2.move(dt, SPEED)
 
     for entity in all_entities:
         screen.blit(entity.surf, entity.rect)
@@ -89,5 +103,6 @@ while running:
     # dt is delta time in seconds since last frame, used for framerate-
     # independent physics.
     dt = clock.tick(60) / 1000
+
 
 pygame.quit()
