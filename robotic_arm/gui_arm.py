@@ -1,13 +1,24 @@
+from functools import partial
 from tkinter import *
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import Callable
+from save_settings import check_validity
 
 
 class GUIArm(Tk):
-    def __init__(self, fn_joystick: Callable, frequency=5):
+    def __init__(
+            self,
+            fn_joystick: Callable,
+            fn_load: Callable[[str], dict],
+            fn_save: Callable[[str, dict], None],
+            fn_validity=check_validity,
+            frequency=5,
+    ):
         """
         :param fn_joystick: the function that will execute reading and executing joystick instructions
         :type fn_joystick: Callable[]
+        :param fn_load: the function that will access file and load settings
+        :param fn_save: function to save settings
         :param frequency: interval in milliseconds when @fn_joystick will be called
         """
 
@@ -15,12 +26,23 @@ class GUIArm(Tk):
 
         self.fn_joystick = fn_joystick
         self.frequency = frequency
+        self.fn_load = fn_load
+        self.fn_save = fn_save
+        self.fn_validity = fn_validity
+
+        self.filename = ""
+        self.saved_settings = {
+
+            "saved_points": {
+
+            }
+        }
 
         self.joint = {
-            1: DoubleVar(value=0),
-            2: DoubleVar(value=0),
-            3: DoubleVar(value=0),
-            4: DoubleVar(value=0),
+            "1": IntVar(value=0),
+            "2": IntVar(value=0),
+            "3": IntVar(value=0),
+            "4": IntVar(value=0),
         }
 
         self.coordinates = {
@@ -28,8 +50,6 @@ class GUIArm(Tk):
             "y": DoubleVar(value=0),
             "z": DoubleVar(value=0),
         }
-
-        self.saved_points = []
 
         self.control_from_joystick = BooleanVar(value=False)
         self.save_position = BooleanVar(value=True)
@@ -48,19 +68,22 @@ class GUIArm(Tk):
             self.fn_joystick()
 
         self.after(self.frequency,
-                   self.loop_for_controller)  # for those who understand what i did here please forgive me
+                   self.loop_for_controller)  # for those who understand what I did here please forgive me
 
     def load_from_file(self):
-        filename = askopenfilename()
-        self.file_path_label.config(text=filename)
-        # TODO: implement loading from file
+        self.filename = askopenfilename()
+        self.file_path_label.config(text=self.filename)
+        self.saved_settings = self.fn_load(self.filename)
 
     def save_to_file(self):
-        # TODO: implement saving
-        pass
+        if not self.fn_validity(self.filename):
+            self.filename = asksaveasfilename(defaultextension=".json")
+            self.file_path_label.config(text=self.filename)
+
+        self.fn_save(self.filename, self.saved_settings)
 
     def configure_window(self):
-        self.title("Welcome to Number Guess")
+        self.title("Robotic Arm Electronics 1524e")
 
         # Set the Windows size...
         self.geometry('900x150')
@@ -92,7 +115,7 @@ class GUIArm(Tk):
         row1 = Frame(body)
         row1.pack()
         for i in range(len(self.joint)):
-            joint = self.joint[i + 1]
+            joint = self.joint[f"{i + 1}"]
 
             element = Frame(row1)
             element.grid(column=i, row=0)
@@ -132,11 +155,32 @@ class GUIArm(Tk):
         check_box_2 = Radiobutton(saved_options, text="Load", variable=self.save_position, value=False)
         check_box_2.grid(row=0, column=1)
 
+        def on_point(nr: int):
+
+            if self.save_position.get():
+                joint = {k: v.get() for k, v in self.joint.items()}
+                # TODO: convert joint in coordinates
+                coordinates = {}
+                self.saved_settings["saved_points"][f"{nr}"] = {
+                    "joint": joint,
+                    "coordinates": coordinates,
+                }
+                print(f"save_position True {joint}")
+            else:
+                joint = self.saved_settings["saved_points"][f"{nr}"]["joint"]
+                if len(joint) == 0: return  # finish execution if there is no settings saved
+                # TODO: convert joint to coordinates
+                coordinates = {}
+
+                for k, v in joint.items():
+                    self.joint[k].set(int(v))
+                self.coordinates = {k: DoubleVar(value=v) for k, v in coordinates.items()}
+
         # creating 10 buttons
         for i in range(10):
-            btn = Button(bottom, text=str(i + 1))
+            func = partial(on_point, i + 1)
+            btn = Button(bottom, text=str(i + 1), command=func)
             btn.pack(side="left")
-            # TODO: implement save/load from point
 
 
 if __name__ == "__main__":
