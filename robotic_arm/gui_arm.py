@@ -2,12 +2,15 @@ from functools import partial
 from tkinter import *
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import Callable
+
+from arm import Arm
 from save_settings import check_validity
 
 
 class GUIArm(Tk):
     def __init__(
             self,
+            arm: Arm,
             fn_joystick: Callable,
             fn_load: Callable[[str], dict],
             fn_save: Callable[[str, dict], None],
@@ -15,6 +18,7 @@ class GUIArm(Tk):
             frequency=5,
     ):
         """
+        :param: arm: Arm object
         :param fn_joystick: the function that will execute reading and executing joystick instructions
         :type fn_joystick: Callable[]
         :param fn_load: the function that will access file and load settings
@@ -23,6 +27,8 @@ class GUIArm(Tk):
         """
 
         super().__init__()
+
+        self.arm = arm
 
         self.fn_joystick = fn_joystick
         self.frequency = frequency
@@ -46,9 +52,10 @@ class GUIArm(Tk):
         }
 
         self.coordinates = {
-            "x": DoubleVar(value=0),
-            "y": DoubleVar(value=0),
-            "z": DoubleVar(value=0),
+            "x": DoubleVar(value=0.0),
+            "y": DoubleVar(value=0.0),
+            "z": DoubleVar(value=0.0),
+            "delta": DoubleVar(value=0.0),
         }
 
         self.control_from_joystick = BooleanVar(value=False)
@@ -61,6 +68,34 @@ class GUIArm(Tk):
         self.draw_body()
         self.draw_bottom()
         self.loop_for_controller()
+
+    def _move_from_joints(self):
+        q1 = self.joint["1"].get()
+        q2 = self.joint["2"].get()
+        q3 = self.joint["3"].get()
+        q4 = self.joint["4"].get()
+
+        self.arm.set_position(q1, q2, q3, q4)
+
+        x, y, z, delta = self.arm.fgm(q1, q2, q3, q4)
+
+        self.coordinates["x"].set(x)
+        self.coordinates["y"].set(y)
+        self.coordinates["z"].set(z)
+        self.coordinates["delta"].set(delta)
+
+    def _move_from_coordinates(self):
+        x = self.coordinates["x"].get()
+        y = self.coordinates["y"].get()
+        z = self.coordinates["z"].get()
+        delta = self.coordinates['delta'].get()
+
+        self.arm.set_position_rgm(x, y, z, delta)
+
+        self.joint["1"].set(self.arm.q1)
+        self.joint["2"].set(self.arm.q2)
+        self.joint["3"].set(self.arm.q3)
+        self.joint["4"].set(self.arm.q4)
 
     def loop_for_controller(self):
         if self.control_from_joystick.get():
@@ -125,7 +160,7 @@ class GUIArm(Tk):
             spin_number = Spinbox(element, from_=0, to=180, textvariable=joint)
             spin_number.pack(side='left')
 
-        btn_joint = Button(row1, text="MOVE")
+        btn_joint = Button(row1, text="MOVE FGM", command=self._move_from_joints)
         btn_joint.grid(column=len(self.joint) + 1, row=0)
 
         # row 2
@@ -141,7 +176,7 @@ class GUIArm(Tk):
             spin_number = Spinbox(element, from_=10, to=300, textvariable=coordinate)
             spin_number.pack(side="left")
 
-        btn_joint = Button(row2, text="MOVE", )
+        btn_joint = Button(row2, text="MOVE RGM", command=self._move_from_coordinates)
         btn_joint.pack(side="right")
 
     def draw_bottom(self):
