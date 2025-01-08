@@ -16,6 +16,7 @@ class Arm:
         self.q2 = 89
         self.q3 = -1
         self.q4 = 1
+        self.gripper_value = 0
         self.delta = 0
 
     def _send_data(self, q1, q2, q3, q4, gripper_val):
@@ -23,14 +24,15 @@ class Arm:
         self.arduino.write(data.encode())
         print(f"Sending to Arduino: Q_1 = {q1} | Q_2 = {q2} | Q_3 = {q3} | Q_4 = {q4} | Grp = {gripper_val}")
 
-    def set_position(self, q1, q2, q3, q4):
+    def set_position(self, q1, q2, q3, q4, gripper_val=20):
         # print(q1, q2, q3, q4)
 
-        self._send_data(q1, q2, q3, q4, 0)
+        self._send_data(q1, q2, q3, q4, gripper_val)
         self.q1 = q1
         self.q2 = q2
         self.q3 = q3
         self.q4 = q4
+        self.gripper_value = gripper_val
 
     def set_position_rgm(self, x: float, y: float, z: float, delta: float) -> (
             float, float, float, float):

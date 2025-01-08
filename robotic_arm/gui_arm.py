@@ -51,6 +51,7 @@ class GUIArm(Tk):
             "2": DoubleVar(value=0),
             "3": DoubleVar(value=0),
             "4": DoubleVar(value=0),
+            "5": DoubleVar(value=0),
         }
 
         self.coordinates = {
@@ -85,8 +86,10 @@ class GUIArm(Tk):
         q2 = self.joint["2"].get()
         q3 = self.joint["3"].get()
         q4 = self.joint["4"].get()
+        gripper = self.joint["5"].get()
 
-        self.arm.set_position(q1, q2, q3, q4)
+
+        self.arm.set_position(q1, q2, q3, q4, gripper_val=gripper)
 
         x, y, z, delta = self.arm.fgm(q1, q2, q3, q4)
 
@@ -115,13 +118,15 @@ class GUIArm(Tk):
             q2 = self.joint["2"].get()
             q3 = self.joint["3"].get()
             q4 = self.joint["4"].get()
-            q1, q2, q3, q4, gripper = self.joystick.on_move(q1, q2, q3, q4, 0)
+            gripper = self.joint["5"].get()
+            q1, q2, q3, q4, gripper = self.joystick.on_move(q1, q2, q3, q4, gripper)
 
 
             self.joint["1"].set(round(q1, 2))
             self.joint["2"].set(round(q2, 2))
             self.joint["3"].set(round(q3, 2))
             self.joint["4"].set(round(q4, 2))
+            self.joint["5"].set(round(gripper, 2))
 
             self._move_from_joints()
 
@@ -182,6 +187,7 @@ class GUIArm(Tk):
             spin_number = Spinbox(element, from_=-180, to=180, textvariable=joint, format="%.2f")
             spin_number.pack(side='left')
 
+
         btn_joint = Button(row1, text="MOVE FGM", command=self._move_from_joints)
         btn_joint.grid(column=len(self.joint) + 1, row=0)
 
@@ -200,6 +206,7 @@ class GUIArm(Tk):
 
         btn_joint = Button(row2, text="MOVE RGM", command=self._move_from_coordinates)
         btn_joint.pack(side="right")
+
 
     def draw_bottom(self):
         bottom = Frame(self)
