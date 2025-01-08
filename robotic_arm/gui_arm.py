@@ -123,6 +123,8 @@ class GUIArm(Tk):
             self.joint["3"].set(q3)
             self.joint["4"].set(q4)
 
+            self._move_from_joints()
+
         self.after(self.frequency, self.loop_for_controller)  # for those who understand what I did here please forgive me
 
     def load_from_file(self):
