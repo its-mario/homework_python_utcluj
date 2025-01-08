@@ -71,7 +71,7 @@ void loop() {
           pwm.setPWM(13, 0, angleToPulse(j2_i));  // Q2
           pwm.setPWM(14, 0, angleToPulse(j3_i));  // Q3
           pwm.setPWM(15, 0, angleToPulse(j4_i));  // Q4
-          gripperServo.write(angleToPulse(gripper));
+          gripperServo.write(gripper);
           delay(5);
         }
 
@@ -94,7 +94,7 @@ void loop() {
       pwm.setPWM(13, 0, angleToPulse(180 - j2));       // Q2
       pwm.setPWM(14, 0, angleToPulse(j3 + 90));        // Q3
       pwm.setPWM(15, 0, angleToPulse(j4 + 90));        // Q4
-      gripperServo.write(angleToPulse(gripper + 90));  // gripper
+      gripperServo.write(gripper + 90);  // gripper
       delay(10);
       j1_i = j1 + 90;
       j2_i = 180 - j2;

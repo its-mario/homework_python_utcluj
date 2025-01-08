@@ -31,10 +31,10 @@ class Joystick:
         if -0.05 < q4 < 0.05:
             q4 = 0
 
-        q1_i = q1_i + q1 /2
-        q2_i = q2_i + q2 /2
-        q3_i = q3_i + q3 /2
-        q4_i = q4_i + q4 /2
+        q1_i = q1_i + q1 * 5
+        q2_i = q2_i + q2 * 5
+        q3_i = q3_i + q3 * 5
+        q4_i = q4_i + q4 * 5
 
         gripper_i = gripper_i - gripper_minus/2 + gripper_plus/2
 

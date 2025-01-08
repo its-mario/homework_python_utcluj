@@ -27,5 +27,6 @@ if __name__ == '__main__':
         joystick=joystick,
         fn_load=load_settings,
         fn_save=save_settings,
+        frequency=100,
     )
     gui_arm.mainloop()
