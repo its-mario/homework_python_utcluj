@@ -1,6 +1,7 @@
 import serial
 from arm import Arm
 from gui_arm import GUIArm
+from joystick import Joystick
 from save_settings import load_settings, save_settings
 
 
@@ -11,8 +12,8 @@ class SerialTest:
         pass
 
 if __name__ == '__main__':
-    def joystick(): pass
 
+    joystick = Joystick()
 
     # !!! when working with arduino uncomment the line below, and select correct COM !!!
     # arduino = serial.Serial(port='COM7', baudrate=9600, timeout=1)

@@ -2,15 +2,18 @@ import time
 
 import pygame
 
+
 class Joystick:
 
     def __init__(self):
         pygame.init()
         pygame.joystick.init()
-        # self.controller = pygame.joystick.Joystick(0)
-        # self.controller.init()
+        self.controller = pygame.joystick.Joystick(0)
+        self.controller.init()
 
     def on_move(self, q1_i, q2_i, q3_i, q4_i, gripper_i):
+
+        # -90 90 ; 0 100; -90 90; -90 90; 0 90;
 
         pygame.event.pump()
         q1 = (self.controller.get_axis(0))
@@ -28,7 +31,23 @@ class Joystick:
         if -0.05 < q4 < 0.05:
             q4 = 0
 
-        return q1_i + q1 /2, q2_i + q2/2, q3_i + q3/2, q4_i + q4/2, gripper_i - gripper_minus/2 + gripper_plus/2
+        q1_i = q1_i + q1 /2
+        q2_i = q2_i + q2 /2
+        q3_i = q3_i + q3 /2
+        q4_i = q4_i + q4 /2
+
+        gripper_i = gripper_i - gripper_minus/2 + gripper_plus/2
+
+        # make sure that q1_i don't exced ranged values -90;90
+        q1_i = max(-90, min(90, q1_i))
+        q2_i = max(0, min(100, q2_i))
+        q3_i = max(-90, min(90, q3_i))
+        q4_i = max(-90, min(90, q4_i))
+
+        gripper_i = max(0, min(90, gripper_i))
+        
+        
+        return q1_i, q2_i, q3_i, q4_i, gripper_i
 
 if __name__ == "__main__":
     joystick = Joystick()
