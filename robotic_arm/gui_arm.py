@@ -118,10 +118,10 @@ class GUIArm(Tk):
             q1, q2, q3, q4, gripper = self.joystick.on_move(q1, q2, q3, q4, 0)
 
 
-            self.joint["1"].set(q1)
-            self.joint["2"].set(q2)
-            self.joint["3"].set(q3)
-            self.joint["4"].set(q4)
+            self.joint["1"].set(round(q1, 2))
+            self.joint["2"].set(round(q2, 2))
+            self.joint["3"].set(round(q3, 2))
+            self.joint["4"].set(round(q4, 2))
 
             self._move_from_joints()
 
@@ -179,7 +179,7 @@ class GUIArm(Tk):
 
             label = Label(element, text=f"{i + 1}")
             label.pack(side='left')
-            spin_number = Spinbox(element, from_=-180, to=180, textvariable=joint)
+            spin_number = Spinbox(element, from_=-180, to=180, textvariable=joint, format="%.2f")
             spin_number.pack(side='left')
 
         btn_joint = Button(row1, text="MOVE FGM", command=self._move_from_joints)
