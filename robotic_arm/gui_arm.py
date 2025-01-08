@@ -3,6 +3,8 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import Callable
 
+from pygame.joystick import Joystick
+
 from arm import Arm
 from save_settings import check_validity
 
@@ -11,7 +13,7 @@ class GUIArm(Tk):
     def __init__(
             self,
             arm: Arm,
-            fn_joystick: Callable,
+            joystick: Joystick,
             fn_load: Callable[[str], dict],
             fn_save: Callable[[str, dict], None],
             fn_validity=check_validity,
@@ -19,8 +21,8 @@ class GUIArm(Tk):
     ):
         """
         :param: arm: Arm object
-        :param fn_joystick: the function that will execute reading and executing joystick instructions
-        :type fn_joystick: Callable[]
+        :param joystick: joystick that implements a `on_move` method that returns joints values
+        :type joystick: Joystick
         :param fn_load: the function that will access file and load settings
         :param fn_save: function to save settings
         :param frequency: interval in milliseconds when @fn_joystick will be called
@@ -30,7 +32,7 @@ class GUIArm(Tk):
 
         self.arm = arm
 
-        self.fn_joystick = fn_joystick
+        self.joystick = joystick
         self.frequency = frequency
         self.fn_load = fn_load
         self.fn_save = fn_save
@@ -45,10 +47,10 @@ class GUIArm(Tk):
         }
 
         self.joint = {
-            "1": IntVar(value=0),
-            "2": IntVar(value=0),
-            "3": IntVar(value=0),
-            "4": IntVar(value=0),
+            "1": DoubleVar(value=0),
+            "2": DoubleVar(value=0),
+            "3": DoubleVar(value=0),
+            "4": DoubleVar(value=0),
         }
 
         self.coordinates = {
@@ -68,6 +70,15 @@ class GUIArm(Tk):
         self.draw_body()
         self.draw_bottom()
         self.loop_for_controller()
+        self.to_home() # initial to send to 0, 0, 0, 0 position
+
+    def to_home(self):
+        self.arm.set_position(0, 90, 0, 0)
+
+        self.joint["1"].set(self.arm.q1)
+        self.joint["2"].set(self.arm.q2)
+        self.joint["3"].set(self.arm.q3)
+        self.joint["4"].set(self.arm.q4)
 
     def _move_from_joints(self):
         q1 = self.joint["1"].get()
@@ -100,10 +111,19 @@ class GUIArm(Tk):
     def loop_for_controller(self):
         if self.control_from_joystick.get():
             """here will read the position from joystick and change it"""
-            self.fn_joystick()
+            q1 = self.joint["1"].get()
+            q2 = self.joint["2"].get()
+            q3 = self.joint["3"].get()
+            q4 = self.joint["4"].get()
+            q1, q2, q3, q4, gripper = self.joystick.on_move(q1, q2, q3, q4, 0)
 
-        self.after(self.frequency,
-                   self.loop_for_controller)  # for those who understand what I did here please forgive me
+
+            self.joint["1"].set(q1)
+            self.joint["2"].set(q2)
+            self.joint["3"].set(q3)
+            self.joint["4"].set(q4)
+
+        self.after(self.frequency, self.loop_for_controller)  # for those who understand what I did here please forgive me
 
     def load_from_file(self):
         self.filename = askopenfilename()
@@ -157,7 +177,7 @@ class GUIArm(Tk):
 
             label = Label(element, text=f"{i + 1}")
             label.pack(side='left')
-            spin_number = Spinbox(element, from_=0, to=180, textvariable=joint)
+            spin_number = Spinbox(element, from_=-180, to=180, textvariable=joint)
             spin_number.pack(side='left')
 
         btn_joint = Button(row1, text="MOVE FGM", command=self._move_from_joints)
@@ -182,6 +202,10 @@ class GUIArm(Tk):
     def draw_bottom(self):
         bottom = Frame(self)
         bottom.pack(side='bottom')
+
+        button_home = Button(bottom, text="Home", command=self.to_home)
+        button_home.pack(side="left")
+
         saved_options = Frame(bottom)
         saved_options.pack(side="left")
 
@@ -218,10 +242,3 @@ class GUIArm(Tk):
             btn.pack(side="left")
 
 
-if __name__ == "__main__":
-    def test_joystick():
-        print("from joystick")
-
-
-    app = GUIArm(fn_joystick=test_joystick)
-    app.mainloop()

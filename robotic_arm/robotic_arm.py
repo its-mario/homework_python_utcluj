@@ -4,10 +4,11 @@ from gui_arm import GUIArm
 from save_settings import load_settings, save_settings
 
 
-class SerialTest():
-    def write(self, **args):
+class SerialTest:
+    def write(self, *args):
         pass
-
+    def close(self ,*args):
+        pass
 
 if __name__ == '__main__':
     def joystick(): pass
@@ -22,7 +23,7 @@ if __name__ == '__main__':
 
     gui_arm = GUIArm(
         arm=arm,
-        fn_joystick=joystick,
+        joystick=joystick,
         fn_load=load_settings,
         fn_save=save_settings,
     )

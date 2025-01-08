@@ -1,7 +1,7 @@
 import serial
 import math
 
-L1, L2, L3 = 56.5, 40.5, 40.5
+L1, L2, L3 = 100, 150, 100
 X0, Y0 = 0, 80
 
 
@@ -12,19 +12,20 @@ class Arm:
             arduino: serial.Serial,
     ):
         self.arduino = arduino
-        self.q1 = 0.0
-        self.q2 = 0.0
-        self.q3 = 0.0
-        self.q4 = 0.0
+        self.q1 = 1
+        self.q2 = 89
+        self.q3 = -1
+        self.q4 = 1
         self.delta = 0
 
-    def _send_data(self, x_val, y_val, z_val, w_val, gripper_val):
-        data = f"{x_val},{y_val},{z_val},{w_val}, {gripper_val}\n"
+    def _send_data(self, q1, q2, q3, q4, gripper_val):
+        data = f"{q1},{q2},{q3},{q4}, {gripper_val}\n"
         self.arduino.write(data.encode())
-        print(f"Sending to Arduino: X={x_val}, Y={y_val}, Z={z_val}, W={w_val}")
+        print(f"Sending to Arduino: Q_1 = {q1} | Q_2 = {q2} | Q_3 = {q3} | Q_4 = {q4} | Grp = {gripper_val}")
 
     def set_position(self, q1, q2, q3, q4):
-        print(q1, q2, q3, q4)
+        # print(q1, q2, q3, q4)
+
         self._send_data(q1, q2, q3, q4, 0)
         self.q1 = q1
         self.q2 = q2
@@ -38,30 +39,32 @@ class Arm:
         self.set_position(q1, q2, q3, q4)
 
     @staticmethod
-    def rgm(x: float, y: float, z: float, delta: float, q1: float, q2: float, q3: float, q4: float, to_print=False) -> (
+    def rgm(x_3d : float, y_3d: float, z_3d: float, delta: float, q1: float, q2: float, q3: float, q4: float, to_print=True) -> (
             float, float, float, float):
-        r = math.sqrt(x * x + y * y)  # Distanța de la origine în proiecția 2D
-        q1_0 = math.degrees(math.acos((r * r + x * x - y * y) / (2 * r * x)))  # Unghiul pentru q1
 
-        # Calcularea coordonatelor pentru următoarea poziție
-        xa = r + math.cos(math.radians(180 + delta)) * L3 - X0
-        ya = z + math.sin(math.radians(180 + delta)) * L3 - Y0
-        oa = math.sqrt(xa ** 2 + ya ** 2)  # Distanța până la noua poziție
+        print(x_3d, y_3d, z_3d, delta)
+        oo_ = math.sqrt(x_3d * x_3d + y_3d * y_3d)
+        q1_0 = math.degrees(math.acos((oo_ * oo_ + x_3d * x_3d - y_3d * y_3d) / (2 * oo_ * x_3d)))
+        xa_ = oo_ + math.cos(math.radians(180 + delta)) * L3 - X0
+        ya_ = z_3d + math.sin(math.radians(180 + delta)) * L3 - Y0
+        oa_ = math.sqrt((xa_) ** 2 + (ya_) ** 2)
+        oa__Ox = math.degrees(math.acos((oa_ * oa_ + xa_ * xa_ - ya_ * ya_) / (2 * oa_ * xa_)))
+        a_o_oq3_2 = math.degrees(math.acos((oa_ * oa_ + L1 * L1 - L2 * L2) / (2 * oa_ * L1)))
+        q2_2 = oa__Ox - a_o_oq3_2
+        q2_1 = oa__Ox + a_o_oq3_2
+        oq3_2_q3_2a_ = math.degrees(math.acos((L1 * L1 + L2 * L2 - oa_ * oa_) / (L1 * L2 * 2)))
+        q3_2 = +(180 - oq3_2_q3_2a_)
+        q3_1 = -(180 - oq3_2_q3_2a_)
+        q4_2 = delta - q2_2 - q3_2
+        q4_1 = delta - q2_1 - q3_1
 
-        # Calcularea unghiurilor pentru soluțiile cinematice inverse
-        oa_ox = math.degrees(math.acos((oa * oa + xa * xa - ya * ya) / (2 * oa * xa)))
-        a_o_q3 = math.degrees(math.acos((oa * oa + L1 * L1 - L2 * L2) / (2 * oa * L1)))  # Unghiul care implică q3
-
-        q2_2 = oa_ox - a_o_q3  # A doua valoare posibilă pentru q2
-        q2_1 = oa_ox + a_o_q3  # Prima valoare posibilă pentru q2
-
-        q3_angle = math.degrees(math.acos((L1 * L1 + L2 * L2 - oa * oa) / (L1 * L2 * 2)))  # Unghiul pentru q3
-        q3_2 = 180 - q3_angle  # A doua valoare posibilă pentru q3
-        q3_1 = -(180 - q3_angle)  # Prima valoare posibilă pentru q3
-
-        # Calcularea valorilor posibile pentru q4
-        q4_2 = delta - q2_2 - q3_2  # A doua valoare posibilă pentru q4
-        q4_1 = delta - q2_1 - q3_1  # Prima valoare posibilă pentru q4
+        q1_0 = round(q1_0, 5)
+        q2_1 = round(q2_1, 5)
+        q3_1 = round(q3_1, 5)
+        q4_1 = round(q4_1, 5)
+        q2_2 = round(q2_2, 5)
+        q3_2 = round(q3_2, 5)
+        q4_2 = round(q4_2, 5)
 
         if to_print:
             # Afișarea celor două seturi de soluții posibile pentru unghiurile articulațiilor
@@ -76,7 +79,7 @@ class Arm:
 
     @staticmethod
     def check_angles(q1, q2, q3, q4):
-        if -90 < q1 < 90 and 0 < q2 < 50 and -90 < q3 < 90 and -90 < q4 < 90:
+        if -90 <= q1 <= 90 and 0 <= q2 <= 100 and -90 <= q3 <= 90 and -90 <= q4 <= 90:
             return True
         else:
             return False
@@ -95,6 +98,11 @@ class Arm:
         y3d = math.sin(math.radians(q1)) * x2d  # Componenta Y în 3D
         x3d = math.cos(math.radians(q1)) * x2d  # Componenta X în 3D
         delta = q2 + q3 + q4  # Unghiul total (sumă din q2, q3, q4)
+
+        x3d=round(x3d,5)
+        y3d = round(y3d, 5)
+        z3d = round(z3d, 5)
+        delta = round(delta, 5)
 
         if toPrint:
             print(f"X : {x3d} , Y : {y3d} , Z : {z3d} , delta : {delta}")
