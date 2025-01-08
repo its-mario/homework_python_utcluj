@@ -230,12 +230,10 @@ class GUIArm(Tk):
             else:
                 joint = self.saved_settings["saved_points"][f"{nr}"]["joint"]
                 if len(joint) == 0: return  # finish execution if there is no settings saved
-                # TODO: convert joint to coordinates
-                coordinates = {}
 
                 for k, v in joint.items():
                     self.joint[k].set(int(v))
-                self.coordinates = {k: DoubleVar(value=v) for k, v in coordinates.items()}
+                self._move_from_joints()
 
         # creating 10 buttons
         for i in range(10):

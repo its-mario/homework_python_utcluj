@@ -16,8 +16,8 @@ if __name__ == '__main__':
     joystick = Joystick()
 
     # !!! when working with arduino uncomment the line below, and select correct COM !!!
-    arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1)
-    # arduino = SerialTest()
+    # arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1)
+    arduino = SerialTest()
     arm = Arm(
         arduino=arduino,
     )
